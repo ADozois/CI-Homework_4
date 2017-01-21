@@ -51,11 +51,17 @@ double getU_TLarge(double theta);
 
 void printOutput(Fuzzy *output);
 
+void fuzzyfication(Input *input, Fuzzy *fuzzy);
+
+void computeOutput(Fuzzy fuzzy, double *output, Input *data);
+
 int main(void) {
-  char *path = "/home/gemini/TUM/CI/CI-Homework_4/Problem 1/testInput41B.txt";
+  char *path = "/home/gemini/TUM/CI/CI-Homework_4/Problem 2/testInput42A.txt";
   Data data;
   char buff[100];
   int i = 0;
+  Fuzzy fuzzy;
+  double out[2] = {0};
 
   if (DEBUG == 0) {
     while (scanf("%s", buff) == 1) {
@@ -67,6 +73,11 @@ int main(void) {
     parsingFile(path, &data);
   }
 
+  for (int j = 0; j < data.size; ++j) {
+    fuzzyfication(&data.input[j],&fuzzy);
+    computeOutput(fuzzy,out,&data.input[j]);
+    printf("%1.6f,%1.6f\n",out[0],out[1]);
+  }
 
 
   return EXIT_SUCCESS;
@@ -137,4 +148,38 @@ double getU_TLarge(double theta) {
 
 void printOutput(Fuzzy *output){
   printf("%1.6f,%1.6f,%1.6f,%1.6f\n", output->Ud_small, output->Ud_large, output->Ut_small, output->Ut_large);
+}
+
+void fuzzyfication(Input *input, Fuzzy *fuzzy){
+  fuzzy->Ut_small = getU_TSmall(getAngle(*input));
+  fuzzy->Ut_large = getU_TLarge(getAngle(*input));
+  fuzzy->Ud_small = getU_DSmall(getDistance(*input));
+  fuzzy->Ud_large = getU_DLarge(getDistance(*input));
+}
+
+void computeOutput(Fuzzy fuzzy, double *output, Input *data) {
+  double kd[4] = {0.25,0.25,0.50,0.50};
+  double kt[4] = {0.12,0.25,0.12,0.25};
+  double U[4][2] = {{0.0}};
+  double W[4] = {0};
+  double num[2] = {0}, deno = 0;
+
+  for (int i = 0; i < 4; ++i) {
+    U[i][0] = getDistance(*data)*kd[i]+getAngle(*data)*kt[i];
+    U[i][1] = getDistance(*data)*kd[i]-getAngle(*data)*kt[i];
+  }
+
+  W[0] = fmin(fuzzy.Ud_small, fuzzy.Ut_small);
+  W[1] = fmin(fuzzy.Ud_small, fuzzy.Ut_large);
+  W[2] = fmin(fuzzy.Ud_large, fuzzy.Ut_small);
+  W[3] = fmin(fuzzy.Ud_large, fuzzy.Ut_large);
+
+  for (int j = 0; j < 4; ++j) {
+    num[0] += W[j]*U[j][0];
+    num[1] += W[j]*U[j][1];
+    deno += W[j];
+  }
+
+  output[0] = num[0]/deno;
+  output[1] = num[1]/deno;
 }
