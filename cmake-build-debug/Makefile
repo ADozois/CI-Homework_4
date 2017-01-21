@@ -123,6 +123,33 @@ CI_Homework_4/fast:
 	$(MAKE) -f CMakeFiles/CI_Homework_4.dir/build.make CMakeFiles/CI_Homework_4.dir/build
 .PHONY : CI_Homework_4/fast
 
+Problem_1/Problem_1.o: Problem_1/Problem_1.c.o
+
+.PHONY : Problem_1/Problem_1.o
+
+# target to build an object file
+Problem_1/Problem_1.c.o:
+	$(MAKE) -f CMakeFiles/CI_Homework_4.dir/build.make CMakeFiles/CI_Homework_4.dir/Problem_1/Problem_1.c.o
+.PHONY : Problem_1/Problem_1.c.o
+
+Problem_1/Problem_1.i: Problem_1/Problem_1.c.i
+
+.PHONY : Problem_1/Problem_1.i
+
+# target to preprocess a source file
+Problem_1/Problem_1.c.i:
+	$(MAKE) -f CMakeFiles/CI_Homework_4.dir/build.make CMakeFiles/CI_Homework_4.dir/Problem_1/Problem_1.c.i
+.PHONY : Problem_1/Problem_1.c.i
+
+Problem_1/Problem_1.s: Problem_1/Problem_1.c.s
+
+.PHONY : Problem_1/Problem_1.s
+
+# target to generate assembly for a file
+Problem_1/Problem_1.c.s:
+	$(MAKE) -f CMakeFiles/CI_Homework_4.dir/build.make CMakeFiles/CI_Homework_4.dir/Problem_1/Problem_1.c.s
+.PHONY : Problem_1/Problem_1.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -132,6 +159,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... CI_Homework_4"
+	@echo "... Problem_1/Problem_1.o"
+	@echo "... Problem_1/Problem_1.i"
+	@echo "... Problem_1/Problem_1.s"
 .PHONY : help
 
 
