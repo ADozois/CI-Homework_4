@@ -6,7 +6,7 @@
 #include <math.h>
 
 #define DEBUG 1
-
+#define D 0.16
 
 typedef struct Input Input;
 typedef struct Fuzzy Fuzzy;
@@ -55,13 +55,15 @@ void fuzzyfication(Input *input, Fuzzy *fuzzy);
 
 void computeOutput(Fuzzy fuzzy, double *output, Input *data);
 
+void defzzyfication(Input *data, double *input, double *output);
+
 int main(void) {
-  char *path = "/home/gemini/TUM/CI/CI-Homework_4/Problem 2/testInput42A.txt";
+  char *path = "/home/gemini/TUM/CI/CI-Homework_4/Problem 3/testInput43B.txt";
   Data data;
   char buff[100];
   int i = 0;
   Fuzzy fuzzy;
-  double out[2] = {0};
+  double out[2] = {0}, cmd[3] = {0};
 
   if (DEBUG == 0) {
     while (scanf("%s", buff) == 1) {
@@ -74,11 +76,14 @@ int main(void) {
   }
 
   for (int j = 0; j < data.size; ++j) {
-    fuzzyfication(&data.input[j],&fuzzy);
-    computeOutput(fuzzy,out,&data.input[j]);
-    printf("%1.6f,%1.6f\n",out[0],out[1]);
+    fuzzyfication(&data.input[j], &fuzzy);
+    computeOutput(fuzzy, out, &data.input[j]);
+    defzzyfication(&data.input[j], out, cmd);
+    data.input[j + 1].X_c = cmd[0];
+    data.input[j + 1].Y_c = cmd[1];
+    data.input[j + 1].Theta_c = cmd[2];
+    printf("%1.6f,%1.6f,%1.6f\n", data.input[j].X_c, data.input[j].Y_c, data.input[j].Theta_c);
   }
-
 
   return EXIT_SUCCESS;
 }
@@ -116,9 +121,9 @@ void parseLine(char *line, Input *data) {
   data->X_r = strtod(token[0], NULL);
   data->Y_r = strtod(token[1], NULL);
   data->Theta_r = strtod(token[2], NULL);
-  data->X_c = strtod(token[1], NULL);
-  data->Y_c = strtod(token[2], NULL);
-  data->Theta_c = strtod(token[3], NULL);
+  data->X_c = strtod(token[0], NULL);
+  data->Y_c = strtod(token[1], NULL);
+  data->Theta_c = strtod(token[2], NULL);
 
 }
 
@@ -146,11 +151,11 @@ double getU_TLarge(double theta) {
   return 1 - getU_TSmall(theta);
 }
 
-void printOutput(Fuzzy *output){
+void printOutput(Fuzzy *output) {
   printf("%1.6f,%1.6f,%1.6f,%1.6f\n", output->Ud_small, output->Ud_large, output->Ut_small, output->Ut_large);
 }
 
-void fuzzyfication(Input *input, Fuzzy *fuzzy){
+void fuzzyfication(Input *input, Fuzzy *fuzzy) {
   fuzzy->Ut_small = getU_TSmall(getAngle(*input));
   fuzzy->Ut_large = getU_TLarge(getAngle(*input));
   fuzzy->Ud_small = getU_DSmall(getDistance(*input));
@@ -158,15 +163,15 @@ void fuzzyfication(Input *input, Fuzzy *fuzzy){
 }
 
 void computeOutput(Fuzzy fuzzy, double *output, Input *data) {
-  double kd[4] = {0.25,0.25,0.50,0.50};
-  double kt[4] = {0.12,0.25,0.12,0.25};
+  double kd[4] = {0.25, 0.25, 0.50, 0.50};
+  double kt[4] = {0.12, 0.25, 0.12, 0.25};
   double U[4][2] = {{0.0}};
   double W[4] = {0};
   double num[2] = {0}, deno = 0;
 
   for (int i = 0; i < 4; ++i) {
-    U[i][0] = getDistance(*data)*kd[i]+getAngle(*data)*kt[i];
-    U[i][1] = getDistance(*data)*kd[i]-getAngle(*data)*kt[i];
+    U[i][0] = getDistance(*data) * kd[i] + getAngle(*data) * kt[i];
+    U[i][1] = getDistance(*data) * kd[i] - getAngle(*data) * kt[i];
   }
 
   W[0] = fmin(fuzzy.Ud_small, fuzzy.Ut_small);
@@ -175,11 +180,23 @@ void computeOutput(Fuzzy fuzzy, double *output, Input *data) {
   W[3] = fmin(fuzzy.Ud_large, fuzzy.Ut_large);
 
   for (int j = 0; j < 4; ++j) {
-    num[0] += W[j]*U[j][0];
-    num[1] += W[j]*U[j][1];
+    num[0] += W[j] * U[j][0];
+    num[1] += W[j] * U[j][1];
     deno += W[j];
   }
 
-  output[0] = num[0]/deno;
-  output[1] = num[1]/deno;
+  output[0] = num[0] / deno;
+  output[1] = num[1] / deno;
+}
+
+void defzzyfication(Input *data, double *input, double *output) {
+  double v = 0;
+  double w = 0;
+
+  v = (input[0] + input[1]) / 2.0;
+  w = (input[0] - input[1]) / D;
+
+  output[0] = data->X_c + v * cos(data->Theta_c);
+  output[1] = data->Y_c + v * sin(data->Theta_c);
+  output[2] = data->Theta_c + w;
 }
